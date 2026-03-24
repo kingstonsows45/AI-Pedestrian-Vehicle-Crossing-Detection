@@ -1,0 +1,58 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+// Set LCD address (0x27 or 0x3F)
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+String inputString = "";
+bool stringComplete = false;
+
+void setup() {
+  Serial.begin(9600);
+
+  lcd.init();
+  lcd.backlight();
+
+  lcd.setCursor(0, 0);
+  lcd.print("System Ready");
+  delay(2000);
+  lcd.clear();
+}
+
+void loop() {
+  if (stringComplete) {
+    inputString.trim();  // remove \n or spaces
+
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("STATUS:");
+
+    lcd.setCursor(0, 1);
+
+    if (inputString == "VEHICLE") {
+      lcd.print("VEHICLE DETECTED");
+    } 
+    else if (inputString == "NO") {
+      lcd.print("NO VEHICLE");
+    } 
+    else {
+      lcd.print("UNKNOWN");
+    }
+
+    inputString = "";
+    stringComplete = false;
+  }
+}
+
+// Serial Event (runs automatically)
+void serialEvent() {
+  while (Serial.available()) {
+    char inChar = (char)Serial.read();
+
+    if (inChar == '\n') {
+      stringComplete = true;
+    } else {
+      inputString += inChar;
+    }
+  }
+}
